@@ -1,0 +1,15 @@
+{
+  "name": "node",
+  "subdomain": "samdutton-node",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "version": "0.0.0-4",
+  "dependencies": {
+    "socket.io": "0.9.x",
+    "express": "3.0.x"
+  },
+  "engines": {
+    "node": "0.8.x"
+  }
+}
