@@ -7,6 +7,7 @@ var server = require('http').createServer(function(req, response){
   });
 });
 server.listen(8080);
+
 var nowjs = require("now");
 var everyone = nowjs.initialize(server);
 
