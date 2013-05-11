@@ -16,9 +16,10 @@ function handler (req, res) {
   });
 }
 
-io.sockets.on('connection', function (socket) {
-  socket.on('signal', function (data) {
-    console.log('Received signal: ', data);
-    socket.emit('signal', data);
+io.sockets.on('connection', function (socket){
+  socket.on('createOrJoin', function (room){
+    console.log('Received createOrJoin request for room: ', room);
+    socket.emit('signal', room);
+    // if room exists
   });
 });
