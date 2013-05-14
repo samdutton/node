@@ -80,7 +80,7 @@ function initialize() {
   miniVideo = document.getElementById("miniVideo");
   remoteVideo = document.getElementById("remoteVideo");
   hangupImg = document.getElementById("hangup");
-  hangupImg.onclick = function(){hangup()};
+  hangupImg.onclick = function(){onHangup()};
   logoLink = document.getElementById("logo");
   statusDiv = document.getElementById("status");
 
@@ -179,8 +179,8 @@ function createPeerConnection() {
       return;
   }
 
-  pc.onaddstream = handleRemoteStreamAdded;
-  pc.onremovestream = handleRemoteStreamRemoved;
+  pc.onaddstream = onRemoteStreamAdded;
+  pc.onremovestream = onRemoteStreamRemoved;
 }
 
 function maybeStart() {
@@ -273,7 +273,7 @@ function processSignalingMessage(message) {
                                          candidate:msg.candidate});
     pc.addIceCandidate(candidate);
   } else if (msg.type === 'bye' && started) {
-    handleRemoteHangup();
+    onRemoteHangup();
   }
 }
 
@@ -321,18 +321,18 @@ function onIceCandidate(event) {
   }
 }
 
-function handleRemoteStreamAdded(event) {
+function onRemoteStreamAdded(event) {
   console.log("Remote stream added.");
   reattachMediaStream(miniVideo, localVideo);
   attachMediaStream(remoteVideo, event.stream);
   remoteStream = event.stream;
   waitForRemoteVideo();
 }
-function handleRemoteStreamRemoved(event) {
+function onRemoteStreamRemoved(event) {
   console.log("Remote stream removed.");
 }
 
-function hangup() {
+function onHangup() {
   console.log("Hanging up.");
   transitionToDone();
   stop();
@@ -340,7 +340,7 @@ function hangup() {
   socket.close();
 }
 
-function handleRemoteHangup() {
+function onRemoteHangup() {
   console.log('Session terminated.');
   transitionToWaiting();
   stop();

@@ -1,31 +1,22 @@
 var static = require('node-static');
 var http = require('http');
 var file = new(static.Server)();
-var server = http.createServer(function (req, res) {
+var app = http.createServer(function (req, res) {
   file.serve(req, res);
 }).listen(9000);
 
-var io = require('socket.io').listen(server);
+// var express = require('express');
+// var app = express();
 
+// app.use(express.static(__dirname + '/js'));
+// app.all('*', function(req, res){
+//   res.sendfile("index.html");
+// });
+
+// app.listen(9000);
+
+var io = require('socket.io').listen(app);
 io.sockets.on('connection', function (socket){
-
-socket.on('create or join', function (room) {
-	log('Request to create or join room ', room);
-
-	var numClients = io.sockets.clients(room).length;
-	log('Room ' + room + ' has ' + numClients + ' client(s)');
-
-	if (numClients == 0){
-		socket.join(room);
-		socket.emit('empty', room);
-	} else if (numClients == 1) {
-		io.sockets.in(room).emit('join', room);
-		socket.join(room);
-	} else {
-		socket.emit('full', room);
-	}
-	socket.emit('emit(): client ' + socket.id + ' joined room ' + room);
-	socket.broadcast.emit('broadcast(): client ' + socket.id + ' joined room ' + room);
 
 	function log(){
 		var array = [">>> "];
@@ -35,9 +26,32 @@ socket.on('create or join', function (room) {
 	    socket.emit('log', array);
 	}
 
-});
+	socket.on('message', function (message) {
+		log('Got message: ', message);
+		socket.broadcast.emit('message', message); // should be room only
+	});
+
+	socket.on('create or join', function (room) {
+		log('Request to create or join room', room);
+
+		var numClients = io.sockets.clients(room).length;
+		log('Room ' + room + ' has ' + numClients + ' client(s)');
+
+		if (numClients == 0){
+			socket.join(room);
+			socket.emit('created', room);
+		} else if (numClients == 1) {
+			io.sockets.in(room).emit('join', room);
+			socket.join(room);
+			socket.emit('joined', room);
+		} else { // max two clients
+			socket.emit('full', room);
+		}
+		socket.emit('emit(): client ' + socket.id + ' joined room ' + room);
+		socket.broadcast.emit('broadcast(): client ' + socket.id + ' joined room ' + room);
 
 
+	});
 
 });
 
