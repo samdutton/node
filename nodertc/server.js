@@ -5,15 +5,17 @@ var app = http.createServer(function (req, res) {
   file.serve(req, res);
 }).listen(9000);
 
+
 // var express = require('express');
 // var app = express();
-
+// console.log(express.static(__dirname + '/js'));
 // app.use(express.static(__dirname + '/js'));
 // app.all('*', function(req, res){
-//   res.sendfile("index.html");
+// 	res.sendfile("index.html");
 // });
 
 // app.listen(9000);
+
 
 var io = require('socket.io').listen(app);
 io.sockets.on('connection', function (socket){
@@ -32,10 +34,10 @@ io.sockets.on('connection', function (socket){
 	});
 
 	socket.on('create or join', function (room) {
-		log('Request to create or join room', room);
-
 		var numClients = io.sockets.clients(room).length;
+
 		log('Room ' + room + ' has ' + numClients + ' client(s)');
+		log('Request to create or join room', room);
 
 		if (numClients == 0){
 			socket.join(room);
@@ -49,7 +51,6 @@ io.sockets.on('connection', function (socket){
 		}
 		socket.emit('emit(): client ' + socket.id + ' joined room ' + room);
 		socket.broadcast.emit('broadcast(): client ' + socket.id + ' joined room ' + room);
-
 
 	});
 
