@@ -1,0 +1,7 @@
+https://docs.google.com/feeds/download/documents/export/Export?id=1GpVqJWxvJ58w6K8Ey-p1BOn6zIABWTj4URiY26d910o&exportFormat=txt
+
+
+https://docs.google.com/feeds/download/presentations/Export?id=1agTQdiowozINtHsYozqMjeCXaU85F6DHMqujw37Ttnc&exportFormat=txt
+
+Try out:
+https://developers.google.com/drive/v2/reference/files/get#try-it

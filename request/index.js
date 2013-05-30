@@ -1,7 +1,8 @@
 var request = require('request'),
     jsdom = require('jsdom');
 
-var urls = ['http://io13webrtc.appspot.com'];
+var urls = ['http://io13webrtc.appspot.com', 'http://photoschromeapp.appspot.com/', 'http://device-agnostic-development.appspot.com/', 'https://picturesque-app.appspot.com/slides', 'http://mobile-html.appspot.com', 'http://yt-adaptiveslides.appspot.com', 'http://bit.ly/robust-io13', 'http://www.chriscartland.com/static/io2013/template.html', 'https://dl.dropboxusercontent.com/u/39519/talks/devtools2013/index.html', 'http://feature-detection-io.appspot.com/', 'http://danheberden.com/presentations/bower/', 'http://jankfree.org/jank-busters-io-2013/template.html'];
+// urls = ['http://io13webrtc.appspot.com'];
 for (var i = 0; i != urls.length; ++i) {
   requestPresentation(urls[i]);
 }
@@ -24,11 +25,25 @@ function requestPresentation(url){
 
 function handleResponse(error, window, url) {
   var presentation = {
+    slides: [],
     url: url
   };
-
+  var d =  window.document;
   var slides = [];
-  var slideElements = window.document.querySelectorAll('slide');
+
+  // cope with different document formats
+  var slideElements;
+  if (d.querySelectorAll('slide').length > 0){
+     slideElements = d.querySelectorAll('slide');
+  } else if (d.querySelectorAll('section').length > 0){
+     slideElements = d.querySelectorAll('section');
+  } else if (d.querySelectorAll('article').length > 0){
+     slideElements = d.querySelectorAll('article');
+  } else {
+    console.log('Could not find element name for slides');
+    return;
+  }
+
   for (var i = 0; i !== slideElements.length; ++i){
     var slide = {
       slideNumber: i + 1
@@ -70,24 +85,17 @@ function handleResponse(error, window, url) {
   } // each slideElement
 
   presentation.slides = slides;
-  var h1 = window.document.querySelector('h1');
-  if (h1)
-      console.log('h1:', h1.innerHTML);
+
+  var h1 = d.querySelector('h1');
   if (h1 && h1.textContent.trim() !== ''){
-    presentation.h1 = getText(h1);
+    presentation.title = getText(h1);
+  } else {
+    presentation.title = url.split('\/\/')[1];
   }
 
+    console.log(presentation.title, presentation.slides.length);
 
-
-  // if (slides.length != 0)
-  //   console.log(presentation.url, presentation);
-
-  // for (var k = 0; k !== slides.length; ++k){
-  //   var slide = slides[k];
-  //   console.log(slide);
-  // }
 }
-
 function getText(element){
   return element.textContent.trim().replace(/\s+/g, ' ');
 }
