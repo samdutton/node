@@ -1,7 +1,30 @@
+API key: AIzaSyDLUa6ti7Wht4Svbeaqy0lJVt2YcSWa5cM
+
+https://docs.google.com/feeds/download/spreadsheets/Export?key=0Avn7Bt1DLmCSdDJXVkpIeHhfc3lST2N2V0FvYUpzVFE&exportFormat=txt
+
 https://docs.google.com/feeds/download/documents/export/Export?id=1GpVqJWxvJ58w6K8Ey-p1BOn6zIABWTj4URiY26d910o&exportFormat=txt
 
 
 https://docs.google.com/feeds/download/presentations/Export?id=1agTQdiowozINtHsYozqMjeCXaU85F6DHMqujw37Ttnc&exportFormat=txt
 
+https://docs.google.com/feeds/download/presentations/Export?id=1GpVqJWxvJ58w6K8Ey-p1BOn6zIABWTj4URiY26d910o&exportFormat=txt
+
+https://docs.google.com/feeds/download/documents/export/Export?id=1GpVqJWxvJ58w6K8Ey-p1BOn6zIABWTj4URiY26d910o&exportFormat=txt
+
+https://docs.google.com/feeds/download/spreadsheets/export/Export?id=0AtxlQg9XpugsdGVUTi1QbUdYbnNTd0tzUHlFZGRaUnc&exportFormat=txt
+
+
+Getting started ...: https://docs.google.com/document/d/1idl_NYQhllFEFqkGQOLv8KBK8M3EVzyvxnKkHl4SuM8/edit
+
 Try out:
 https://developers.google.com/drive/v2/reference/files/get#try-it
+
+Slide URLs:
+0AtxlQg9XpugsdGVUTi1QbUdYbnNTd0tzUHlFZGRaUnc
+https://docs.google.com/feeds/download/spreadsheets/export/Export?id=0AtxlQg9XpugsdGVUTi1QbUdYbnNTd0tzUHlFZGRaUnc&exportFormat=txt
+
+Get metadata:
+https://www.googleapis.com/drive/v2/files/0AtxlQg9XpugsdGVUTi1QbUdYbnNTd0tzUHlFZGRaUnc?key={YOUR_API_KEY}
+https://www.googleapis.com/drive/v2/files/0AtxlQg9XpugsdGVUTi1QbUdYbnNTd0tzUHlFZGRaUnc?key=AIzaSyDLUa6ti7Wht4Svbeaqy0lJVt2YcSWa5cM
+
+https://docs.google.com/spreadsheet/pub?key=0AtxlQg9XpugsdGVUTi1QbUdYbnNTd0tzUHlFZGRaUnc&single=true&gid=0&range=b5&output=csv
