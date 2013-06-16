@@ -52,14 +52,28 @@ function map(presentation){
   var slides = presentation.slides;
   for (var i = 0; i !== slides.length; ++i) {
     var slide = slides[i];
-    var regExp = new RegExp(query, "i");
-//    console.log(window.query, slide.text);
+    // var regExp = new RegExp(queryString, "i");
     // if (regExp.test(slide.text)) {
-    //   console.log(presentation, slide, i + 1);
+    //   log(presentation.url + ': ' + slide.text);
     // }
-    if (slide.text.indexOf(queryString.toLowerCase()) != -1) {
-      log(slide.text);
-//      console.log(presentation, slide, i + 1);
+    // indexOf is quicker than using a RegExp with test()
+    if (slide.text.indexOf(queryString.toLowerCase()) === -1) {
+      continue;
+    }
+    if (slide.images) {
+      for (var j = 0; j != slide.images.length; ++j) {
+        var image = slide.images[j];
+        if (image.alt.indexOf(queryString.toLowerCase()) !== -1 ||
+          image.src.indexOf(queryString.toLowerCase()) !== -1) {
+          log(presentation.url + ' image: ' + image.alt + ', ' + image.src);
+        }
+      }
+    }
+    if (slide.article && slide.article.indexOf(queryString.toLowerCase()) != -1) {
+      log(presentation.url + ' article: ' + slide.article);
+    }
+    if (slide.aside && slide.aside.indexOf(queryString.toLowerCase()) != -1) {
+      log(presentation.url + ' aside: ' + slide.aside);
     }
   }
 }
@@ -73,7 +87,7 @@ function get(string){
         console.log('pouchdb.query error: ', error);
       } else {
         // alert('pouchdb.query success: ', response);
-//        console.log('pouchdb.query success: ', response);
+        console.log('pouchdb.query success: ', response);
       }
     }
   );
@@ -87,5 +101,5 @@ searchButton.onclick = function(){
 };
 
 function log(string){
-  document.getElementById('data').innerHTML = string;
+  document.getElementById('data').innerHTML += '<p>' + string + '</p>';
 }

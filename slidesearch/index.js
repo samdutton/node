@@ -100,6 +100,7 @@ function requestPresentation(url){
   });
 }
 
+// each slide may have a heading, article, aside (speaker notes) or images
 function addSlideData(presentation, slide, slideElement){
   slide.text = getText(slideElement);
 
