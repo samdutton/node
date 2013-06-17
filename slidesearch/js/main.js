@@ -10,6 +10,7 @@ function init(from, to){
     if (error) {
       console.log("Pouch error creating database:", error);
     } else {
+      // destroy Pouch
       // Pouch.replicate(from, to, {continuous: true}, function (error, changes) {
       //   if (error) {
       //     console.log('Pouch replicate() error: ', error);

@@ -1,17 +1,46 @@
-var nano = require('nano')('http://localhost:5984');
 var jsdom = require('jsdom');
 var request = require('request');
 var localCouchName = 'presentations';
-var remoteCouchName = 'https://chrome.iriscouch.com:6984/presentations';
-var presentations;
+var localHost = 'http://localhost:5984';
+var remoteHost = 'https://chrome.iriscouch.com';
+var dbName = 'presentations';
+var remoteCouchURL = 'https://chrome.iriscouch.com/presentations';
+var localCouchDB;
 var presentationURLs;
+var isReplicated = false;
+
+var nano = require('nano')(localHost);
 
 nano.db.destroy(localCouchName, function() {
   nano.db.create(localCouchName, function() {
-    presentations = nano.use(localCouchName);
+    localCouchDB = nano.use(localCouchName);
     getPresentationURLs();
   });
 });
+
+function replicate(){
+  nano = require('nano')(remoteHost);
+  nano.db.destroy(dbName, function() {
+    nano.db.create(dbName, function() {
+      nano = require('nano')(localHost);
+      nano.db.replicate(dbName, remoteCouchURL, {create_target:true},
+        function(error, body) {
+          if (error) {
+            console.log('>>> nano.db.replicate() error:', error);
+          } else {
+            nano.db.get(localCouchName, function(error, body) {
+              if (error) {
+                console.log('nano.db.get error:', error);
+              } else {
+                console.log('Created remote database, doc_count:', body.doc_count);
+              }
+            });
+          }
+      });
+    });
+  });
+}
+
 
 function insertOrUpdateDoc(db, doc, key, isInsertAttempted) {
   db.insert(doc, function (error, body, header) {
@@ -25,24 +54,17 @@ function insertOrUpdateDoc(db, doc, key, isInsertAttempted) {
         console.log('>>> insertOrUpdateDoc() error:', error);
       }
     } else {
-//      console.log('Inserted ', doc.url);
+        // console.log('Inserted ', doc.url);
         nano.db.get(localCouchName, function(error, body) {
         if (error) {
           console.log('nano.db.get error:', error);
         } else {
-          if (body.doc_count === presentationURLs.length) {
+          if (body.doc_count === presentationURLs.length && !isReplicated) {
             // maybe add timeout to replicate regardless
             // in case of XHR problems getting presentations
-            console.log('nano.db.get successful:', body.doc_count);
-
-            nano.db.replicate(localCouchName, remoteCouchName, {create_target:true},
-              function(error, body) {
-                if (error) {
-                console.log('>>> nano.db.replicate() error:', error);
-                } else {
-                  console.log('nano.db.replicate() success', body);
-                }
-            });
+            isReplicated = true; //
+            console.log('Created local database, doc_count:', body.doc_count);
+            replicate();
           }
         }
       });
@@ -51,7 +73,7 @@ function insertOrUpdateDoc(db, doc, key, isInsertAttempted) {
 }
 
 function insertOrUpdatePresentation(presentation){
-  insertOrUpdateDoc(presentations, presentation, presentation.url, false);
+  insertOrUpdateDoc(localCouchDB, presentation, presentation.url, false);
 }
 
 function handleURLs(error, window, url) {
@@ -86,7 +108,7 @@ function requestPresentation(url){
   request({uri: url}, function(error, response, body){
     if (error) {
       console.log('>>> Error getting presentation ' + url + ":", error);
-      var index = array.indexOf(url);
+      var index = presentationURLs.indexOf(url);
       presentationURLs.splice(index, 1); // to maintain list of viable URLs
     } else if (response.statusCode == 200) {
       jsdom.env({
