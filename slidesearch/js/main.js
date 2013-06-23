@@ -1,4 +1,8 @@
-var searchResultsElement = document.getElementById('searchResults');
+var infoDiv = document.querySelector('div#info');
+var queryInput = document.querySelector('input#query');
+var searchButton = document.querySelector('button#search');
+var searchResultsElement = document.querySelector('div#searchResults');
+
 var pouchdb;
 var localCouchName = 'http://127.0.0.1:5984/presentations';
 var pouchName = 'idb://presentations';
@@ -8,9 +12,7 @@ var remoteCouchName = 'https://chrome.iriscouch.com/presentations';
 var numResults = 0;
 var numSlides = 0;
 function init(remote, local){
-  console.log('init() called');
   Pouch(local, function(error, db){
-    console.log('Created pouch');
     pouchdb = db;
     if (error) {
       console.log("Pouch error creating database:", error);
@@ -20,7 +22,12 @@ function init(remote, local){
           console.log('Pouch replicate() error: ', error);
         } else {
           db.allDocs({include_docs: true}, function(error, docs) {
-            console.log('Pouch db: ' + docs.rows.length + ' rows: ', docs.rows);
+            infoDiv.innerText = 'Built database with ' + docs.rows.length +
+              ' presentations.';
+            queryInput.disabled = false;
+            queryInput.focus();
+            searchButton.disabled = false;
+            // console.log('Pouch db: ' + docs.rows.length + ' rows: ', docs.rows);
           });
         }
       });
@@ -64,8 +71,7 @@ function map(presentation){
   numSlides += slides.length;
   for (var i = 0; i !== slides.length; ++i) {
     var slide = slides[i];
-    // indexOf is quicker than RegExp with test()
-    // doesn't speed it up much!
+    // checking slide text doesn't speed it up much!
     if (slide.text.toLowerCase().indexOf(queryString) === -1) {
       continue;
     } else {
@@ -80,10 +86,10 @@ function map(presentation){
         }
       }
     }
-    if (slide.visibleText && slide.visibleText.toLowerCase().indexOf(queryString) != -1) {
-      log(presentation.url + ' visibleText: ' + slide.visibleText);
+    if (slide.heading && slide.heading.toLowerCase().indexOf(queryString) !== -1) {
+      log(presentation.url + ' heading: ' + slide.heading);
     }
-    if (slide.aside && slide.aside.toLowerCase().indexOf(queryString) != -1) {
+    if (slide.aside && slide.aside.toLowerCase().indexOf(queryString) !== -1) {
       log(presentation.url + ' aside: ' + slide.aside);
     }
   }
@@ -91,12 +97,16 @@ function map(presentation){
 
 function searchFor(string){
   queryString = string;
+  if (!pouchdb) {
+    alert('Error creating local database.\n\nPlease reload the page.');
+    return;
+  }
   pouchdb.query({map: map}, {reduce: false},
     function(error, response) {
       if (error){
         console.log('pouchdb.query error: ', error);
       } else {
-        console.log('pouchdb.query success:', response);
+//        console.log('pouchdb.query success:', response);
         if (numResults === 0) {
           searchResultsElement.innerHTML = '<p>No results.</p>';
         } else {
@@ -105,7 +115,6 @@ function searchFor(string){
               '<p>' + numSlides + ' slides, ' +
               docs.rows.length + ' presentations, ' +
               numResults + ' match(es):</p>' +
-              console.log('*' + searchResultsString + '*');
               searchResultsString;
           });
         }
@@ -115,8 +124,6 @@ function searchFor(string){
   );
 }
 
-var searchButton = document.querySelector('button#search');
-var queryInput = document.querySelector('input#query');
 searchButton.onclick = function(){
   var queryString = queryInput.value.replace(/[^a-zA-Z]/g, " ").toLowerCase();
   numResults = 0;

@@ -132,7 +132,7 @@ function addSlideData(presentation, slide, slideElement){
   var h2 = slideElement.querySelector('h2');
   if (h2 && h2.textContent.trim() !== ''){
     // if both h1 and h2, join them
-    slide.heading = h1 ? slide.heading + ': ' + getText(h2) : getText(h2);
+    slide.heading = h1 ? slide.heading + ' · ' + getText(h2) : getText(h2);
   }
   slide.text += slide.heading;
 

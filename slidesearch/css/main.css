@@ -26,6 +26,10 @@ word-break: break-word;
 	padding: 0 0 1em 0;
 }
 
+div#searchInput {
+  margin: 0 0 1em 0;
+}
+
 div#searchResults {
   max-height: 500px;
   overflow: auto;
