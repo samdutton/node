@@ -1,25 +1,29 @@
+var searchResultsElement = document.getElementById('searchResults');
 var pouchdb;
 var localCouchName = 'http://127.0.0.1:5984/presentations';
 var pouchName = 'idb://presentations';
-var remoteCouchName = 'https://chrome.iriscouch.com:6984/presentations';
-// var from = 'idb://bar';
+var remoteCouchName = 'https://chrome.iriscouch.com/presentations';
+// var remoteCouchName = 'https://chrome.cloudant.com/presentations';
 
-function init(from, to){
-  Pouch(to, function(error, db){
+var numResults = 0;
+var numSlides = 0;
+function init(remote, local){
+  console.log('init() called');
+  Pouch(local, function(error, db){
+    console.log('Created pouch');
     pouchdb = db;
     if (error) {
       console.log("Pouch error creating database:", error);
     } else {
-      // destroy Pouch
-      // Pouch.replicate(from, to, {continuous: true}, function (error, changes) {
-      //   if (error) {
-      //     console.log('Pouch replicate() error: ', error);
-      //   } else {
-      //     db.allDocs({include_docs: true}, function(error, docs) {
-      //       console.log('Pouch replicated ' + doc.rows.length + ' rows: ', docs.rows);
-      //     });
-      //   }
-      // });
+      Pouch.replicate(remote, local, function (error, changes) {
+        if (error) {
+          console.log('Pouch replicate() error: ', error);
+        } else {
+          db.allDocs({include_docs: true}, function(error, docs) {
+            console.log('Pouch db: ' + docs.rows.length + ' rows: ', docs.rows);
+          });
+        }
+      });
     }
   });
 }
@@ -35,10 +39,9 @@ function destroy(name){
 }
 
 // destroy(remoteCouchName);
-// destroy(pouch);
-var pouchdb;
+// destroy(pouchName);
 
-init(remoteCouchName, pouchName);
+init(localCouchName, pouchName);
 
 // var getAllButton = document.querySelector('button#getAll');
 
@@ -50,45 +53,63 @@ init(remoteCouchName, pouchName);
 // };
 
 function map(presentation){
+// maybe not worth doing: adds size to DB and doesn't take much time
+//   if (presentation.text.indexOf(queryString) === -1) {
+// //      console.log('Not found in whole presentation: ', presentation.url);
+//      return;
+//   } else {
+// //      console.log('>>> Found in ', presentation.url);
+//   }
   var slides = presentation.slides;
+  numSlides += slides.length;
   for (var i = 0; i !== slides.length; ++i) {
     var slide = slides[i];
-    // var regExp = new RegExp(queryString, "i");
-    // if (regExp.test(slide.text)) {
-    //   log(presentation.url + ': ' + slide.text);
-    // }
-    // indexOf is quicker than using a RegExp with test()
-    if (slide.text.indexOf(queryString.toLowerCase()) === -1) {
+    // indexOf is quicker than RegExp with test()
+    // doesn't speed it up much!
+    if (slide.text.toLowerCase().indexOf(queryString) === -1) {
       continue;
+    } else {
+      numResults += 1;
     }
     if (slide.images) {
       for (var j = 0; j != slide.images.length; ++j) {
         var image = slide.images[j];
-        if (image.alt.indexOf(queryString.toLowerCase()) !== -1 ||
-          image.src.indexOf(queryString.toLowerCase()) !== -1) {
+        if (image.alt.toLowerCase().indexOf(queryString) !== -1 ||
+          image.src.toLowerCase().indexOf(queryString) !== -1) {
           log(presentation.url + ' image: ' + image.alt + ', ' + image.src);
         }
       }
     }
-    if (slide.article && slide.article.indexOf(queryString.toLowerCase()) != -1) {
-      log(presentation.url + ' article: ' + slide.article);
+    if (slide.visibleText && slide.visibleText.toLowerCase().indexOf(queryString) != -1) {
+      log(presentation.url + ' visibleText: ' + slide.visibleText);
     }
-    if (slide.aside && slide.aside.indexOf(queryString.toLowerCase()) != -1) {
+    if (slide.aside && slide.aside.toLowerCase().indexOf(queryString) != -1) {
       log(presentation.url + ' aside: ' + slide.aside);
     }
   }
 }
 
-function get(string){
+function searchFor(string){
   queryString = string;
   pouchdb.query({map: map}, {reduce: false},
     function(error, response) {
       if (error){
-        // alert('pouchdb.query error: ', error);
         console.log('pouchdb.query error: ', error);
       } else {
-        // alert('pouchdb.query success: ', response);
-        console.log('pouchdb.query success: ', response);
+        console.log('pouchdb.query success:', response);
+        if (numResults === 0) {
+          searchResultsElement.innerHTML = '<p>No results.</p>';
+        } else {
+          pouchdb.allDocs({include_docs: true}, function(error, docs) {
+            searchResultsElement.innerHTML =
+              '<p>' + numSlides + ' slides, ' +
+              docs.rows.length + ' presentations, ' +
+              numResults + ' match(es):</p>' +
+              console.log('*' + searchResultsString + '*');
+              searchResultsString;
+          });
+        }
+        console.timeEnd('Time for search:');
       }
     }
   );
@@ -97,10 +118,16 @@ function get(string){
 var searchButton = document.querySelector('button#search');
 var queryInput = document.querySelector('input#query');
 searchButton.onclick = function(){
-  var queryString = queryInput.value.replace(/[^a-zA-Z]/g, " ");
-  get(queryString);
+  var queryString = queryInput.value.replace(/[^a-zA-Z]/g, " ").toLowerCase();
+  numResults = 0;
+  numSlides = 0;
+  searchResultsString = '';
+  searchResultsElement.innerText = '';
+  console.time('Time for search:');
+  searchFor(queryString);
 };
 
+var searchResultsString = '';
 function log(string){
-  document.getElementById('data').innerHTML += '<p>' + string + '</p>';
+  searchResultsString += '<p>' + string + '</p>';
 }

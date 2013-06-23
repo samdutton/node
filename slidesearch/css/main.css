@@ -26,6 +26,11 @@ word-break: break-word;
 	padding: 0 0 1em 0;
 }
 
+div#searchResults {
+  max-height: 500px;
+  overflow: auto;
+}
+
 footer {
   border-top: 1px solid #eee;
   margin: 1em 0 0 0;

@@ -124,7 +124,6 @@ function requestPresentation(url){
 
 // each slide may have a heading, article, aside (speaker notes) or images
 function addSlideData(presentation, slide, slideElement){
-  slide.text = getText(slideElement);
 
   var h1 = slideElement.querySelector('h1');
   if (h1 && h1.textContent.trim() !== ''){
@@ -132,16 +131,22 @@ function addSlideData(presentation, slide, slideElement){
   }
   var h2 = slideElement.querySelector('h2');
   if (h2 && h2.textContent.trim() !== ''){
-    slide.heading = getText(h2);
+    // if both h1 and h2, join them
+    slide.heading = h1 ? slide.heading + ': ' + getText(h2) : getText(h2);
   }
+  slide.text += slide.heading;
+
   var article = slideElement.querySelector('article');
   if (article && article.textContent.trim() !== ''){
     slide.article = getText(article);
   }
+  slide.text += slide.article;
+
   var aside = slideElement.querySelector('aside');
   if (aside && aside.textContent.trim() !== ''){
     slide.aside = getText(aside);
   }
+  slide.text += slide.aside;
 
   var images = slideElement.querySelectorAll('img');
   if (images.length){
@@ -150,7 +155,7 @@ function addSlideData(presentation, slide, slideElement){
       var image = images[i];
       var alt = image.alt || image.title;
       if (alt && alt.trim() != ''){
-        slide.text += ' ' + image.alt;
+        slide.text += image.alt;
         slide.images.push({alt: alt, src: image.src});
       }
     }
@@ -159,12 +164,17 @@ function addSlideData(presentation, slide, slideElement){
       delete slide.images;
     }
   }
+
+  // combine and lowercase text to enable faster search
+  slide.text = slide.text.toLowerCase();
+  presentation.text += slide.text;
   presentation.slides.push(slide);
 }
 
 function handlePresentation(error, window, url) {
   var presentation = {
     slides: [],
+    text: '', // combined slide text: duplication of data, but enable faster search
     url: url
   };
 
@@ -184,11 +194,11 @@ function handlePresentation(error, window, url) {
 
   for (var i = 0; i !== slideElements.length; ++i){
     var slide = {
-      slideNumber: i + 1
+      slideNumber: i + 1,
+      text: ''
     };
     addSlideData(presentation, slide, slideElements[i]);
   } // each slideElement
-
   // newer presentations have title inserted dynamically with JavaScript
   var h1 = d.querySelector('h1');
   if (window.document.title){
