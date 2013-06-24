@@ -1,0 +1,16 @@
+{
+  "name": "synthrtc",
+  "subdomain": "samdutton-synthrtc",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "version": "0.0.0-5",
+  "dependencies": {
+    "socket.io": "0.9.x",
+    "express": "3.0.x",
+    "node-static": "0.6.9"
+  },
+  "engines": {
+    "node": "0.8.x"
+  }
+}
