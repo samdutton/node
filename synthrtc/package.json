@@ -4,7 +4,7 @@
   "scripts": {
     "start": "node server.js"
   },
-  "version": "0.0.0-5",
+  "version": "0.0.0-11",
   "dependencies": {
     "socket.io": "0.9.x",
     "express": "3.0.x",

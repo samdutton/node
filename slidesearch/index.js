@@ -23,7 +23,7 @@ function replicate(){
   nano.db.destroy(dbName, function() {
     nano.db.create(dbName, function() {
       nano = require('nano')(localHost);
-      nano.db.replicate(dbName, remoteCouchURL, {create_target:true},
+      nano.db.replicate(dbName, remoteCouchURL, {create_target: true},
         function(error, body) {
           if (error) {
             console.log('>>> nano.db.replicate() error:', error);

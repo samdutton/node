@@ -2,8 +2,13 @@ var static = require('node-static');
 var http = require('http');
 // var https = require('https');
 var file = new(static.Server)();
+var fs = require('fs');
+// var options = {
+//   key: fs.readFileSync('test/fixtures/keys/agent2-key.pem'),
+//   cert: fs.readFileSync('test/fixtures/keys/agent2-cert.pem')
+// };
 var app = http.createServer(function (req, res) {
-//var app = https.createServer(function (req, res) {
+// var app = https.createServer(options, function (req, res) {
   file.serve(req, res);
 }).listen(9000);
 

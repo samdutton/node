@@ -1,5 +1,6 @@
 'use strict';
 
+var audioElement;
 var isChannelReady;
 var isInitiator;
 var isStarted;
@@ -24,7 +25,7 @@ var sdpConstraints = {'mandatory': {
 var room = location.pathname.substring(1);
 if (room === '') {
 //  room = prompt('Enter room name:');
-  room = 'foo';
+  room = 'synth';
 } else {
   //
 }
@@ -176,7 +177,9 @@ function handleIceCandidate(event) {
 function handleRemoteStreamAdded(event) {
   console.log('Remote stream added.');
 //  reattachMediaStream(miniVideo, localVideo);
-  attachMediaStream(remoteVideo, event.stream);
+  if (!isInitiator){
+    attachMediaStream(remoteVideo, event.stream);
+  }
   remoteStream = event.stream;
 //  waitForRemoteVideo();
 }
@@ -194,6 +197,9 @@ function doCall() {
   constraints = mergeConstraints(constraints, sdpConstraints);
   console.log('Sending offer to peer, with constraints: \n' +
     '  \'' + JSON.stringify(constraints) + '\'.');
+  if (isInitiator) {
+    addWebAudio();
+  }
   pc.createOffer(setLocalAndSendMessage, null, constraints);
 }
 
@@ -355,3 +361,44 @@ function removeCN(sdpLines, mLineIndex) {
   return sdpLines;
 }
 
+///////////////////////////////////
+
+// add stream from Web Audio
+function addWebAudio(){
+  // cope with browser differences
+  var context;
+  if (typeof webkitAudioContext === "function") {
+    context = new webkitAudioContext();
+  } else if (typeof AudioContext === "function") {
+    context = new AudioContext();
+  } else {
+    alert("Sorry! Web Audio is not supported by this browser");
+  }
+
+  // use the audio element to create the source node
+  audioElement = document.createElement("Audio"); // global scope, for console
+  audioElement.src = 'audio/human-voice.wav';
+  audioElement.loop = true;
+  var sourceNode = context.createMediaElementSource(audioElement);
+//  sourceNode.loop = true;
+  //audioElement.addEventListener('loadedmetadata', function(){console.log('loadedmetadata')});
+
+  // connect the source node to a filter node
+  var filterNode = context.createBiquadFilter();
+  // see https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html#BiquadFilterNode-section
+  filterNode.type = 1; // HIGHPASS
+  // cutoff frequency: for HIGHPASS, audio is attenuated below this frequency
+  sourceNode.connect(filterNode);
+
+  // connect the filter node to a gain node (to change audio volume)
+  var gainNode = context.createGainNode();
+  // default is 1 (no change); less than 1 means audio is attenuated, and vice versa
+  gainNode.gain.value = 0.5;
+  filterNode.connect(gainNode);
+
+  var mediaStreamDestination = context.createMediaStreamDestination();
+  gainNode.connect(mediaStreamDestination);
+  pc.addStream(mediaStreamDestination.stream);
+  audioElement.play();
+  console.log('audioElement play() called, mediaStreamDestination.stream: ', mediaStreamDestination.stream);
+}
